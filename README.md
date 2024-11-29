@@ -1,28 +1,19 @@
-# Product-System
+## Product-System
 
 A simple application for managing products, including features to list, add, edit, and delete products. The system is divided into two projects:
 
-##Front-End: (ProductApp)
+Front-End:
 
 - Angular v17
 - Bootstrap 5 & Icons
 - NgRx State Management Examples
 - RxJs Examples
 
-##Back-End: (ProductAPI)
+Back-End: 
 
 - .NET Core 8.0
 - Entity Framework Core
 - MSSQL for Database Management
-
-
-Table of contents:
-
-- [Repo layout](#repo-layout)
-- [Application diagram](#application-diagram)
-- [Getting started](#getting-started)
-- [CI/CD](#cicd)
-- [Contributing](#contributing)
 
 ## Application Screenshots
 
