@@ -1,0 +1,48 @@
+<div class="container product-list">
+      <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">Product List</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/products/add">Add Product</a>
+              </li>
+            </ul>
+            <form class="d-flex" role="search">
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" #searchInput>
+              <button class="btn btn-outline-success" type="submit" (click)="onSearch(searchInput.value)">Search</button>
+            </form>
+          </div>
+        </div>
+      </nav>
+  
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th (click)="onSort('name')">Name</th>
+          <th (click)="onSort('description')">Description</th>
+          <th (click)="onSort('category')">Category</th>
+          <th (click)="onSort('price')">Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products$ | async">
+          <td>{{ product.name }}</td>
+          <td>{{ product.description }}</td>
+          <td>{{ product.category }}</td>
+          <td>{{ product.price | currency: 'EUR' }}</td>
+          <td>
+            <button type="button" class="btn btn-outline-primary" (click)="editProduct(product.id)">
+              <i class="fa fa-pencil"></i> Edit</button>&nbsp;
+            <button type="button" class="btn btn-outline-danger" (click)="deleteProduct(product.id)">
+              <i class="fa fa-trash"></i> Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
