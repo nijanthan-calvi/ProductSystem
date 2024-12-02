@@ -52,6 +52,9 @@ public class ProductController : Controller
                     "name" => direction == "asc"
                         ? products.OrderBy(p => p.Name)
                         : products.OrderByDescending(p => p.Name),
+                    "description" => direction == "asc"
+                        ? products.OrderBy(p => p.Description)
+                        : products.OrderByDescending(_ => _.Description),
                     "category" => direction == "asc"
                         ? products.OrderBy(p => p.Category)
                         : products.OrderByDescending(p => p.Category),

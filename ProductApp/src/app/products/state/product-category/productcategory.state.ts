@@ -1,4 +1,4 @@
-import { ProductCategory } from "../productcategory.model";
+import { ProductCategory } from "./productcategory.model";
 
 export interface ProductCategoryState {
     productcategories: ProductCategory[];

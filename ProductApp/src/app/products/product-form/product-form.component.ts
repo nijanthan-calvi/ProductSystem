@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Product } from '../product.model';
-import { ProductCategory } from '../productcategory.model';
-import * as ProductActions from '../state/product.actions';
-import * as ProductCategoryActions from '../state/productcategory.actions';
-import { selectFilteredProducts, selectProducts } from '../state/product.selectors';
-import { selectProductCategories, selectProductCategoryLoading, selectProductCategoryError } from '../state/productcategory.selectors';
+import { Product } from '../state/product/product.model';
+import { ProductCategory } from '../state/product-category/productcategory.model';
+import * as ProductActions from '../state/product/product.actions';
+import * as ProductCategoryActions from '../state/product-category/productcategory.actions';
+import { selectFilteredProducts, selectProducts } from '../state/product/product.selectors';
+import { selectProductCategories, selectProductCategoryLoading, selectProductCategoryError } from '../state/product-category/productcategory.selectors';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 

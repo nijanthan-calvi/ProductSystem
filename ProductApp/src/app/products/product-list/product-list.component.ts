@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { Product } from '../product.model';
-import * as ProductActions from '../state/product.actions';
-import { selectFilteredProducts, selectProducts, selectSearchTerm } from '../state/product.selectors';
+import { Product } from '../state/product/product.model';
+import * as ProductActions from '../state/product/product.actions';
+import { selectFilteredProducts, selectProducts, selectSearchTerm } from '../state/product/product.selectors';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
