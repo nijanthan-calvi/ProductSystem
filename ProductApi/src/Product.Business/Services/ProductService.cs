@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Product.Business.Models;
 using Product.Business.Services.Interfaces;
+using Product.DataAccess.Entities;
 using Product.DataAccess.Repositories.Interfaces;
 
 namespace Product.Business.Services;
@@ -33,9 +34,36 @@ public class ProductService : IProductService
 
     public async Task<ProductPayload> PostProduct(ProductPayload product)
     {
+        // Check if the category already exists
+        var existingCategory = await _productRepository.GetCategoryByNameAsync(product.Category);
+        int categoryId = 0;
+
+        if (existingCategory != null)
+        {
+            // Use the existing category ID
+            categoryId = existingCategory.CategoryId;
+        }
+        else
+        {
+            // Create a new category
+            var newCategory = new ProductCategory
+            {
+                CategoryName = product.Category
+            };
+
+            var newProductCategory = _productRepository.AddProductCategoryAsync(newCategory);
+            categoryId = newProductCategory.Result.CategoryId;
+        }
+
+        // Map the product payload to the entity and set the category ID
         var productDetails = _mapper.Map<DataAccess.Entities.Product>(product);
+        productDetails.CategoryId = categoryId;
+        productDetails.Category = null;
+
+        // Save the product
         var response = await _productRepository.AddProductAsync(productDetails);
 
+        // Map the saved entity back to the payload and return
         return _mapper.Map<ProductPayload>(response);
     }
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Product.DataAccess.DataContext;
+using Product.DataAccess.Entities;
 using Product.DataAccess.Repositories.Interfaces;
 
 namespace Product.DataAccess.Repositories;
@@ -18,11 +19,23 @@ public class ProductRepository(ProductDataContext context) : IProductRepository
         return await _context.Products.Include(p => p.Category).FirstOrDefaultAsync(p => p.ProductId == id);
     }
 
+    public async Task<ProductCategory?> GetCategoryByNameAsync(string categoryName)
+    {
+        return await _context.ProductCategory.FirstOrDefaultAsync(p => p.CategoryName == categoryName.ToLower());
+    }
+
     public async Task<Entities.Product> AddProductAsync(Entities.Product product)
     {
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
         return product;
+    }
+
+    public async Task<ProductCategory> AddProductCategoryAsync(ProductCategory productCategory)
+    {
+        _context.ProductCategory.Add(productCategory);
+        await _context.SaveChangesAsync();
+        return productCategory;
     }
 
     public async Task<Entities.Product?> UpdateProductAsync(int id, Entities.Product product)
@@ -33,7 +46,13 @@ public class ProductRepository(ProductDataContext context) : IProductRepository
         existingProduct.ProductName = product.ProductName;
         existingProduct.ProductDescription = product.ProductDescription;
         existingProduct.ProductPrice = product.ProductPrice;
-        existingProduct.Category.CategoryName = product.Category.CategoryName;
+
+        if (!string.Equals(existingProduct.Category.CategoryName, product.Category.CategoryName, StringComparison.OrdinalIgnoreCase))
+        {
+            var productCategory = await _context.ProductCategory.FirstOrDefaultAsync(p => p.CategoryName == product.Category.CategoryName.ToLower());
+            existingProduct.Category = productCategory;
+            existingProduct.CategoryId = productCategory.CategoryId;
+        }
 
         await _context.SaveChangesAsync();
         return existingProduct;

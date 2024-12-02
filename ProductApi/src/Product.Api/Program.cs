@@ -17,7 +17,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(DataMapper));
 builder.Services.AddDbContext<ProductDataContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IProductCategoryService, ProductCategoryService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>

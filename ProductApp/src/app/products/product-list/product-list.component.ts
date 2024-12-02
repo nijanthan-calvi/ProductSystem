@@ -19,14 +19,19 @@ export class ProductListComponent implements OnInit {
   products$: Observable<Product[]>;
   searchTerm$: Observable<string>;
   sortDirection: string | undefined;
+  selectedProductId: number | null = null;
 
-  constructor(private store: Store<{ products: Product[] }>) {
+  constructor(private store: Store) {
     this.products$ = this.store.select(selectProducts);
     this.searchTerm$ = this.store.select(selectSearchTerm);
   }
 
   ngOnInit(): void {
     this.store.dispatch(ProductActions.loadProducts());
+  }
+
+  setSelectedProductId(id: number): void {
+    this.selectedProductId = id;
   }
 
   onSearch(searchTerm: string): void {
@@ -44,7 +49,10 @@ export class ProductListComponent implements OnInit {
     window.location.href = `/products/edit/${id}`;
   }
 
-  deleteProduct(id: number): void {
-    this.store.dispatch(ProductActions.deleteProduct({ id }));
+  deleteProduct(id: number | null): void {
+    if (id !== null) 
+    {
+      this.store.dispatch(ProductActions.deleteProduct({ id }));
+    }
   }
 }

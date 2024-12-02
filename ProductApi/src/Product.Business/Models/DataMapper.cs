@@ -13,5 +13,10 @@ public class DataMapper : Profile
             .ForMember(dest => dest.ProductPrice, opt => opt.MapFrom(src => src.Price))
             .ForPath(dest => dest.Category.CategoryName, opt => opt.MapFrom(src => src.Category))
             .ReverseMap();
+
+        CreateMap<ProductCategoryPayload, DataAccess.Entities.ProductCategory>()
+            .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Name))
+            .ReverseMap();
     }
 }

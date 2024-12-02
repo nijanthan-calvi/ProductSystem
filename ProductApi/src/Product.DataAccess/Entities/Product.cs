@@ -10,5 +10,5 @@ public class Product
     public string? ProductDescription { get; set; }
     public int CategoryId { get; set; }
     public decimal ProductPrice { get; set; }
-    public ProductCategory Category { get; set; }
+    public ProductCategory? Category { get; set; }
 }
