@@ -1,9 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
 import { Product } from '../state/product/product.model';
 import * as ProductActions from '../state/product/product.actions';
-import { selectFilteredProducts, selectProducts, selectSearchTerm } from '../state/product/product.selectors';
+import { selectProducts } from '../state/product/product.selectors';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -16,18 +15,23 @@ import { ReactiveFormsModule } from '@angular/forms';
   styleUrls: ['./product-list.component.scss'],
 })
 export class ProductListComponent implements OnInit {
-  products$: Observable<Product[]>;
-  searchTerm$: Observable<string>;
+  products = signal<Product[]>([]);
+  searchTerm = signal<string>('');
   sortDirection: string | undefined;
   selectedProductId: number | null = null;
 
-  constructor(private store: Store) {
-    this.products$ = this.store.select(selectProducts);
-    this.searchTerm$ = this.store.select(selectSearchTerm);
-  }
+  filteredProducts = computed(() => 
+    this.products().filter((product) => 
+      product.name.toLowerCase().includes(this.searchTerm().toLowerCase())));
+
+  constructor(private store: Store) {}
 
   ngOnInit(): void {
     this.store.dispatch(ProductActions.loadProducts());
+
+    this.store.select(selectProducts).subscribe((products) => {
+      this.products.set(products);
+    })
   }
 
   setSelectedProductId(id: number): void {
@@ -35,7 +39,7 @@ export class ProductListComponent implements OnInit {
   }
 
   onSearch(searchTerm: string): void {
-    this.store.dispatch(ProductActions.searchProducts({ searchTerm }));
+    this.searchTerm.set(searchTerm);
   }
 
   onSort(sortBy: 'name' | 'category' | 'description' | 'price'): void {
@@ -46,7 +50,7 @@ export class ProductListComponent implements OnInit {
 
   editProduct(id: number): void {
     // Navigate to the edit page
-    window.location.href = `/products/edit/${id}`;
+    window.location.href = `/products/form/edit/${id}`;
   }
 
   deleteProduct(id: number | null): void {

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { ProductService } from '../../product.service';
+import { ProductService } from '../../service/product.service';
 import * as ProductActions from './product.actions';
 import { catchError, map, mergeMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -16,6 +16,22 @@ export class ProductEffects {
         this.productService.getProducts().pipe(
           map((products) => ProductActions.loadProductsSuccess({ products })),
           catchError((error) => of(ProductActions.loadProductsFailure({ error })))
+        )
+      )
+    )
+  );
+
+  getProductById$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ProductActions.getProductById),
+      mergeMap(({ id }) =>
+        this.productService.getProductById(id).pipe(
+          map((product) =>
+            ProductActions.getProductByIdSuccess({ product })
+          ),
+          catchError((error) =>
+            of(ProductActions.getProductByIdFailure({ error }))
+          )
         )
       )
     )
@@ -75,5 +91,23 @@ export class ProductEffects {
         )
       )
     )
+  );
+
+  // Centralized failure handling
+  handleFailures$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(
+          ProductActions.loadProductsFailure,
+          ProductActions.addProductFailure,
+          ProductActions.updateProductFailure,
+          ProductActions.deleteProductFailure
+        ),
+        tap((action) => {
+          console.error('API Failure:', action.error);
+          alert(`An error occurred: ${action.error}`); 
+        })
+      ),
+    { dispatch: false } 
   );
 }

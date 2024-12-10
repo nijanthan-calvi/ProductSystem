@@ -1,10 +1,13 @@
 import { Routes } from '@angular/router';
 import { ProductListComponent } from './products/product-list/product-list.component';
-import { ProductFormComponent } from './products/product-form/product-form.component';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'products', pathMatch: 'full' }, // Redirect to products
+    { path: '', redirectTo: 'products', pathMatch: 'full' },
     { path: 'products', component: ProductListComponent, runGuardsAndResolvers: 'pathParamsChange' },
-    { path: 'products/add', component: ProductFormComponent },
-    { path: 'products/edit/:id', component: ProductFormComponent },
-];
+    {
+      path: 'products/form',
+      loadChildren: () =>
+        import('./products/product-form/product-form-routing.module').then((m) => m.ProductFormRoutingModule),
+    },
+  ];
+  

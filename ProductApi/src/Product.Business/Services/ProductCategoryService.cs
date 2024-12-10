@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Product.Business.Exceptions;
 using Product.Business.Models;
 using Product.Business.Services.Interfaces;
 using Product.DataAccess.Entities;
@@ -6,16 +7,10 @@ using Product.DataAccess.Repositories.Interfaces;
 
 namespace Product.Business.Services;
 
-public class ProductCategoryService : IProductCategoryService
+public class ProductCategoryService(IProductCategoryRepository productCategoryRepository, IMapper mapper) : IProductCategoryService
 {
-    private readonly IProductCategoryRepository _productCategoryRepository;
-    private readonly IMapper _mapper;
-
-    public ProductCategoryService(IProductCategoryRepository productCategoryRepository, IMapper mapper)
-    {
-        _productCategoryRepository = productCategoryRepository;
-        _mapper = mapper;
-    }
+    private readonly IProductCategoryRepository _productCategoryRepository = productCategoryRepository;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<IEnumerable<ProductCategoryPayload>> GetProductCategories()
     {
@@ -27,9 +22,10 @@ public class ProductCategoryService : IProductCategoryService
     public async Task<ProductCategoryPayload?> GetProductCategoryByName(string productCategoryName)
     {
         var product = await _productCategoryRepository.GetCategoryByNameAsync(productCategoryName);
-        if (product == null) return null;
 
-        return _mapper.Map<ProductCategoryPayload>(product);
+        return product == null
+            ? throw new NoDataFoundException($"No product category is found with name: {productCategoryName}")
+            : _mapper.Map<ProductCategoryPayload>(product);
     }
 
     public async Task<ProductCategoryPayload> AddProductCategory(string productCategoryName)
@@ -39,7 +35,7 @@ public class ProductCategoryService : IProductCategoryService
 
         if (existingCategory != null)
         {
-            return null;
+            throw new DuplicateDataException($"Already Product Category is exists with name: {productCategoryName}");
         }
 
         // Map the product payload to the entity and set the category ID
@@ -57,6 +53,9 @@ public class ProductCategoryService : IProductCategoryService
 
     public async Task<ProductCategoryPayload> UpdateProductCategory(int id, string productCategoryName)
     {
+        //Check if product already exists
+        _ = await _productCategoryRepository.GetCategoryByNameAsync(productCategoryName)
+            ?? throw new NoDataFoundException($"No product category found with this name: {productCategoryName}");
         var response = await _productCategoryRepository.UpdateProductCategoryAsync(id, productCategoryName);
 
         return _mapper.Map<ProductCategoryPayload>(response);

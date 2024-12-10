@@ -4,13 +4,13 @@ namespace Product.Business.Services.Interfaces;
 
 public interface IProductService
 {
-    Task<IEnumerable<ProductPayload>> GetProducts();
+    Task<IEnumerable<ProductPayload>> GetAllProducts(string? search, string? sort, string? direction);
 
-    Task<ProductPayload> GetProduct(int id);
+    Task<ProductPayload> GetProductById(int id);
 
-    Task<ProductPayload> PostProduct(ProductPayload product);
+    Task<ProductPayload> AddProduct(ProductPayload product);
 
-    Task<ProductPayload> PutProduct(int id, ProductPayload product);
+    Task<ProductPayload> UpdateProduct(int id, ProductPayload product);
 
-    Task DeleteProduct(int id);
+    Task DeleteProductById(int id);
 }

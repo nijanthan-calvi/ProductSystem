@@ -6,7 +6,7 @@ import { Product } from '../state/product/product.model';
 import { ProductCategory } from '../state/product-category/productcategory.model';
 import * as ProductActions from '../state/product/product.actions';
 import * as ProductCategoryActions from '../state/product-category/productcategory.actions';
-import { selectFilteredProducts, selectProducts } from '../state/product/product.selectors';
+import { selectProductById } from '../state/product/product.selectors';
 import { selectProductCategories, selectProductCategoryLoading, selectProductCategoryError } from '../state/product-category/productcategory.selectors';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
@@ -22,12 +22,12 @@ export class ProductFormComponent  implements OnInit {
   productForm: FormGroup;
   isEditMode = false;
   productId?: number;
-  products$: Observable<Product[]>;
   categories$: Observable<ProductCategory[]>;
   loading$: Observable<boolean>;
   error$: Observable<any>;
   selectedProduct: Product | null = null;
   selectedCategoryName: string | null = null;
+  product$ = this.store.select(selectProductById);  
 
   constructor(
     private fb: FormBuilder,
@@ -35,7 +35,6 @@ export class ProductFormComponent  implements OnInit {
     private router: Router,
     private route: ActivatedRoute
   ) {
-    this.products$ = this.store.select(selectProducts);
     this.categories$ = this.store.select(selectProductCategories);
     this.loading$ = this.store.select(selectProductCategoryLoading);
     this.error$ = this.store.select(selectProductCategoryError);
@@ -49,19 +48,21 @@ export class ProductFormComponent  implements OnInit {
 
   ngOnInit(): void {
     this.store.dispatch(ProductCategoryActions.loadCategories());
-    this.store.dispatch(ProductActions.loadProducts());
     this.productId = +this.route.snapshot.paramMap.get('id')!;
+    this.store.dispatch(ProductActions.getProductById({ id: this.productId }));   
     this.isEditMode = !!this.productId;
 
     if (this.isEditMode) {
       // Load product details for editing
-      this.store.select(selectProducts).subscribe((products) => {
-        const product = products.find((p) => p.id === this.productId);
+      this.product$.subscribe((product) => {
         if (product) {
           this.productForm.patchValue(product);
           this.selectedProduct = product;
           this.selectedCategoryName = product.category;
-        }
+        } else {
+          this.selectedProduct = null;
+          this.selectedCategoryName = null;
+        }          
       });
     }
   }

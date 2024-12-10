@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Product.Business.Exceptions;
 using Product.Business.Models;
 using Product.Business.Services.Interfaces;
-using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
@@ -9,61 +10,38 @@ namespace ProductApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ProductController : Controller
+public class ProductController
+    (
+    IProductService productService,
+    ILogger<ProductController> logger
+    ) : Controller
 {
-    private readonly IProductService _productService;
+    private readonly IProductService _productService = productService;
 
-    public ProductController(IProductService productService)
-    {
-        _productService = productService;
-    }
-
-    // GET: api/products
+    /// <summary>
+    /// Get a list of product details.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint returns a collection of products.
+    /// </remarks>
+    /// <param name="search"></param>
+    /// <param name="sort"></param>
+    /// <param name="direction"></param>
+    /// <response code="200">Returns a list of products</response>
+    /// <response code="401">If authentication is invalid</response>
+    /// <response code="404">If no products are found</response>
+    /// <response code="400">If the request is invalid</response>
+    /// <summary>
     [HttpGet]
-    [SwaggerOperation(
-            Summary = "List of Products",
-            Description = "Get a list of product details.",
-            OperationId = "getProducts"
-        )]
-    [ProducesResponseType(typeof(IEnumerable<ProductPayload>), (int)HttpStatusCode.OK)]
-    [SwaggerResponse((int)HttpStatusCode.OK, nameof(HttpStatusCode.OK),
-            typeof(IEnumerable<ProductPayload>))]
-    [SwaggerResponse((int)HttpStatusCode.NotFound, nameof(HttpStatusCode.NotFound))]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, nameof(HttpStatusCode.BadRequest))]
+    [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<ProductPayload>), StatusCodes.Status200OK)]
     [Produces("application/json")]
-    public async Task<ActionResult<IEnumerable<ProductPayload>>> GetProducts(
+    public async Task<ActionResult<IEnumerable<ProductPayload>>> GetAllProducts(
         string? search = null, string? sort = null, string? direction = "asc")
     {
         try
         {
-            var products = await _productService.GetProducts();
-
-            // Filter by search term
-            if (!string.IsNullOrEmpty(search))
-            {
-                products = products.Where(p => p.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
-            }
-
-            // Sort by column
-            if (!string.IsNullOrEmpty(sort))
-            {
-                products = sort.ToLower() switch
-                {
-                    "name" => direction == "asc"
-                        ? products.OrderBy(p => p.Name)
-                        : products.OrderByDescending(p => p.Name),
-                    "description" => direction == "asc"
-                        ? products.OrderBy(p => p.Description)
-                        : products.OrderByDescending(_ => _.Description),
-                    "category" => direction == "asc"
-                        ? products.OrderBy(p => p.Category)
-                        : products.OrderByDescending(p => p.Category),
-                    "price" => direction == "asc"
-                        ? products.OrderBy(p => p.Price)
-                        : products.OrderByDescending(p => p.Price),
-                    _ => products
-                };
-            }
+            var products = await _productService.GetAllProducts(search, sort, direction);
 
             return Ok(products);
         }
@@ -73,106 +51,127 @@ public class ProductController : Controller
         }
     }
 
-    // GET: api/products/{id}
+    /// <summary>
+    /// Get a information of a product.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint returns a detail of the product.
+    /// </remarks>
+    /// <param name="id"></param>
+    /// <response code="200">Returns detail of a product</response>
+    /// <response code="401">If authentication is invalid</response>
+    /// <response code="404">If no products are found</response>
+    /// <response code="400">If the request is invalid</response>
     [HttpGet]
+    [Authorize]
     [Route("{id}")]
-    [SwaggerOperation(
-            Summary = "Product Detail",
-            Description = "Get a information of a product.",
-            OperationId = "getProduct"
-        )]
-    [ProducesResponseType(typeof(ProductPayload), (int)HttpStatusCode.OK)]
-    [SwaggerResponse((int)HttpStatusCode.OK, nameof(HttpStatusCode.OK),
-            typeof(ProductPayload))]
-    [SwaggerResponse((int)HttpStatusCode.NotFound, nameof(HttpStatusCode.NotFound))]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, nameof(HttpStatusCode.BadRequest))]
     [Produces("application/json")]
-    public async Task<ActionResult<ProductPayload>> GetProduct([FromRoute] int id)
+    public async Task<ActionResult<ProductPayload>> GetProductById([FromRoute] int id)
     {
         try
         {
-            var product = await _productService.GetProduct(id);
-            if (product == null) return NotFound();
+            var product = await _productService.GetProductById(id);
 
             return Ok(product);
         }
+        catch (NoDataFoundException ex)
+        {
+            logger.LogError(ex, "An handled exception occured");
+            return StatusCode((int)HttpStatusCode.NotFound, ex.Message);
+        }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
     }
 
-    // POST: api/products
+    /// <summary>
+    /// Create a Product
+    /// </summary>
+    /// <remarks>
+    /// This endpoint will create a product.
+    /// </remarks>
+    /// <param name="product"></param>
+    /// <response code="201">Returns created product</response>
+    /// <response code="401">If authentication is invalid</response>
+    /// <response code="404">If no products are found</response>
+    /// <response code="400">If the request is invalid</response>
     [HttpPost]
-    [SwaggerOperation(
-        Summary = "Create a Product",
-        Description = "Create a Product",
-        OperationId = "createProduct"
-    )]
-    [ProducesResponseType(typeof(ProductPayload), (int)HttpStatusCode.Created)]
-    [SwaggerResponse((int)HttpStatusCode.Created, nameof(HttpStatusCode.Created),
-        typeof(ProductPayload))]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, nameof(HttpStatusCode.BadRequest))]
+    [Authorize]
     [Produces("application/json")]
-    public async Task<ActionResult<ProductPayload>> PostProduct([FromBody] ProductPayload product)
+    public async Task<ActionResult<ProductPayload>> AddProduct([FromBody] ProductPayload product)
     {
         try
         {
-            var response = await _productService.PostProduct(product);
+            var response = await _productService.AddProduct(product);
 
             return StatusCode((int)HttpStatusCode.Created, response);
         }
+        catch (DuplicateDataException ex)
+        {
+            logger.LogError(ex, "An handled exception occured");
+            return StatusCode((int)HttpStatusCode.BadRequest, ex.Message);
+        }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
     }
 
-    // PUT: api/products/{id}
+    /// <summary>
+    /// Update a product.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint updates the product.
+    /// </remarks>
+    /// <param name="id"></param>
+    /// <param name="product"></param>
+    /// <response code="200">Returns 200 Object</response>
+    /// <response code="401">If authentication is invalid</response>
+    /// <response code="404">If no products are found</response>
+    /// <response code="400">If the request is invalid</response>
     [HttpPut]
+    [Authorize]
     [Route("{id}")]
-    [SwaggerOperation(
-        Summary = "Update a Product",
-        Description = "Update a Product",
-        OperationId = "updateProduct"
-    )]
-    [ProducesResponseType(typeof(ProductPayload), (int)HttpStatusCode.OK)]
-    [SwaggerResponse((int)HttpStatusCode.OK, nameof(HttpStatusCode.OK),
-        typeof(ProductPayload))]
-    [SwaggerResponse((int)HttpStatusCode.NotFound, nameof(HttpStatusCode.NotFound))]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, nameof(HttpStatusCode.BadRequest))]
     [Produces("application/json")]
-    public async Task<IActionResult> PutProduct([FromRoute, Required] int id, [FromBody] ProductPayload product)
+    public async Task<IActionResult> UpdateProduct([FromRoute, Required] int id, [FromBody] ProductPayload product)
     {
         try
         {
-            await _productService.PutProduct(id, product);
+            await _productService.UpdateProduct(id, product);
             return Ok();
         }
+        catch (NoDataFoundException ex)
+        {
+            logger.LogError(ex, "An handled exception occured");
+            return StatusCode((int)HttpStatusCode.NotFound, ex.Message);
+        }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
     }
 
-    // DELETE: api/products/{id}
+    /// <summary>
+    /// Delete a product.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint will delete the product with product id.
+    /// </remarks>
+    /// <param name="id"></param>
+    /// <response code="204">Returns No Content</response>
+    /// <response code="401">If authentication is invalid</response>
+    /// <response code="404">If no products are found</response>
+    /// <response code="400">If the request is invalid</response>
     [HttpDelete]
+    [Authorize]
     [Route("{id}")]
-    [SwaggerOperation(
-        Summary = "Delete a Product",
-        Description = "Delete a Product",
-        OperationId = "deleteProduct"
-    )]
-    [ProducesResponseType((int)HttpStatusCode.NoContent)]
-    [SwaggerResponse((int)HttpStatusCode.NoContent, nameof(HttpStatusCode.NoContent))]
-    [SwaggerResponse((int)HttpStatusCode.NotFound, nameof(HttpStatusCode.NotFound))]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, nameof(HttpStatusCode.BadRequest))]
     [Produces("application/json")]
-    public async Task<IActionResult> DeleteProduct([FromRoute, Required] int id)
+    public async Task<IActionResult> DeleteProductById([FromRoute, Required] int id)
     {
         try
         {
-            await _productService.DeleteProduct(id);
+            await _productService.DeleteProductById(id);
             return NoContent();
         }
         catch (Exception ex)

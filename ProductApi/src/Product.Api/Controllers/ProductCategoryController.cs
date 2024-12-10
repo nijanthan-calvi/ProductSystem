@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Product.Business.Exceptions;
 using Product.Business.Models;
 using Product.Business.Services.Interfaces;
-using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
@@ -9,29 +10,28 @@ namespace ProductApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ProductCategoryController : Controller
+public class ProductCategoryController
+    (
+    IProductCategoryService productCategoryService,
+    ILogger<ProductCategoryController> logger
+    ) : Controller
 {
-    private readonly IProductCategoryService _productCategoryService;
+    private readonly IProductCategoryService _productCategoryService = productCategoryService;
 
-    public ProductCategoryController(IProductCategoryService productCategoryService)
-    {
-        _productCategoryService = productCategoryService;
-    }
-
-    // GET: api/productCategories
+    /// <summary>
+    /// Get a list of product category details.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint returns a collection of product categories.
+    /// </remarks>
+    /// <response code="200">Returns a list of product categories</response>
+    /// <response code="401">If authentication is invalid</response>
+    /// <response code="404">If no products are found</response>
+    /// <response code="400">If the request is invalid</response>
     [HttpGet]
-    [SwaggerOperation(
-            Summary = "List of Product Categories",
-            Description = "Get a list of product category details.",
-            OperationId = "getProductCategories"
-        )]
-    [ProducesResponseType(typeof(IEnumerable<ProductCategoryPayload>), (int)HttpStatusCode.OK)]
-    [SwaggerResponse((int)HttpStatusCode.OK, nameof(HttpStatusCode.OK),
-            typeof(IEnumerable<ProductCategoryPayload>))]
-    [SwaggerResponse((int)HttpStatusCode.NotFound, nameof(HttpStatusCode.NotFound))]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, nameof(HttpStatusCode.BadRequest))]
+    [Authorize]
     [Produces("application/json")]
-    public async Task<ActionResult<IEnumerable<ProductPayload>>> GetProducts()
+    public async Task<ActionResult<IEnumerable<ProductPayload>>> GetProductCategories()
     {
         try
         {
@@ -45,21 +45,22 @@ public class ProductCategoryController : Controller
         }
     }
 
-    // GET: api/productcategory/{name}
+    /// <summary>
+    /// Get detail of the product category.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint returns detail of the product category.
+    /// </remarks>
+    /// <param name="name"></param>
+    /// <response code="200">Returns detail of the product category</response>
+    /// <response code="401">If authentication is invalid</response>
+    /// <response code="404">If no products are found</response>
+    /// <response code="400">If the request is invalid</response>
     [HttpGet]
+    [Authorize]
     [Route("{name}")]
-    [SwaggerOperation(
-            Summary = "Product Category Detail",
-            Description = "Get a information of a product category.",
-            OperationId = "getProductCategory"
-        )]
-    [ProducesResponseType(typeof(ProductCategoryPayload), (int)HttpStatusCode.OK)]
-    [SwaggerResponse((int)HttpStatusCode.OK, nameof(HttpStatusCode.OK),
-            typeof(ProductCategoryPayload))]
-    [SwaggerResponse((int)HttpStatusCode.NotFound, nameof(HttpStatusCode.NotFound))]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, nameof(HttpStatusCode.BadRequest))]
     [Produces("application/json")]
-    public async Task<ActionResult<ProductCategoryPayload>> GetProductCategory([FromRoute] string name)
+    public async Task<ActionResult<ProductCategoryPayload>> GetProductCategoryByName([FromRoute] string name)
     {
         try
         {
@@ -68,25 +69,32 @@ public class ProductCategoryController : Controller
 
             return Ok(productCategory);
         }
+        catch (NoDataFoundException ex)
+        {
+            logger.LogError(ex, "An handled exception occured");
+            return StatusCode((int)HttpStatusCode.NotFound, ex.Message);
+        }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
     }
 
-    // POST: api/productcategory
+    /// <summary>
+    /// Add product category.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint will add product category.
+    /// </remarks>
+    /// <param name="productCategoryName"></param>
+    /// <response code="201">Returns a newly added product category</response>
+    /// <response code="401">If authentication is invalid</response>
+    /// <response code="404">If no products are found</response>
+    /// <response code="400">If the request is invalid</response>
     [HttpPost]
-    [SwaggerOperation(
-        Summary = "Create a Product Category",
-        Description = "Create a Product Category",
-        OperationId = "createProductCategory"
-    )]
-    [ProducesResponseType(typeof(ProductCategoryPayload), (int)HttpStatusCode.Created)]
-    [SwaggerResponse((int)HttpStatusCode.Created, nameof(HttpStatusCode.Created),
-        typeof(ProductCategoryPayload))]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, nameof(HttpStatusCode.BadRequest))]
+    [Authorize]
     [Produces("application/json")]
-    public async Task<ActionResult<ProductCategoryPayload>> PostProduct([FromBody] string productCategoryName)
+    public async Task<ActionResult<ProductCategoryPayload>> AddProductCategory([FromBody] string productCategoryName)
     {
         try
         {
@@ -94,51 +102,65 @@ public class ProductCategoryController : Controller
 
             return StatusCode((int)HttpStatusCode.Created, response);
         }
+        catch (DuplicateDataException ex)
+        {
+            logger.LogError(ex, "An handled exception occured");
+            return StatusCode((int)HttpStatusCode.BadRequest, ex.Message);
+        }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
     }
 
-    // PUT: api/productcategory/{id}
+    /// <summary>
+    /// Update product category.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint returns will update product category.
+    /// </remarks>
+    /// <param name="id"></param>
+    /// <param name="productCategoryName"></param>
+    /// <response code="200">Returns a updated product category</response>
+    /// <response code="401">If authentication is invalid</response>
+    /// <response code="404">If no products are found</response>
+    /// <response code="400">If the request is invalid</response>
     [HttpPut]
+    [Authorize]
     [Route("{id}")]
-    [SwaggerOperation(
-        Summary = "Update a Product Category",
-        Description = "Update a Product Category",
-        OperationId = "updateProductCategory"
-    )]
-    [ProducesResponseType(typeof(ProductCategoryPayload), (int)HttpStatusCode.OK)]
-    [SwaggerResponse((int)HttpStatusCode.OK, nameof(HttpStatusCode.OK),
-        typeof(ProductCategoryPayload))]
-    [SwaggerResponse((int)HttpStatusCode.NotFound, nameof(HttpStatusCode.NotFound))]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, nameof(HttpStatusCode.BadRequest))]
     [Produces("application/json")]
-    public async Task<IActionResult> PutProduct([FromRoute, Required] int id, [FromBody] string productCategoryName)
+    public async Task<IActionResult> UpdateProductCategory([FromRoute, Required] int id, [FromBody] string productCategoryName)
     {
         try
         {
             await _productCategoryService.UpdateProductCategory(id, productCategoryName);
             return Ok();
         }
+        catch (NoDataFoundException ex)
+        {
+            logger.LogError(ex, "An handled exception occured");
+            return StatusCode((int)HttpStatusCode.NotFound, ex.Message);
+        }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
     }
 
-    // DELETE: api/productcategory/{id}
+    /// <summary>
+    /// Delete product category.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint returns will delete product category.
+    /// </remarks>
+    /// <param name="id"></param>
+    /// <response code="204">Returns No Content</response>
+    /// <response code="401">If authentication is invalid</response>
+    /// <response code="404">If no products are found</response>
+    /// <response code="400">If the request is invalid</response>
     [HttpDelete]
+    [Authorize]
     [Route("{id}")]
-    [SwaggerOperation(
-        Summary = "Delete a Product Category",
-        Description = "Delete a Product Category",
-        OperationId = "deleteProductCategory"
-    )]
-    [ProducesResponseType((int)HttpStatusCode.NoContent)]
-    [SwaggerResponse((int)HttpStatusCode.NoContent, nameof(HttpStatusCode.NoContent))]
-    [SwaggerResponse((int)HttpStatusCode.NotFound, nameof(HttpStatusCode.NotFound))]
-    [SwaggerResponse((int)HttpStatusCode.BadRequest, nameof(HttpStatusCode.BadRequest))]
     [Produces("application/json")]
     public async Task<IActionResult> DeleteProduct([FromRoute, Required] int id)
     {

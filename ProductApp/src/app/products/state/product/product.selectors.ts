@@ -11,6 +11,11 @@ export const selectProducts = createSelector(
   (state: ProductState) => state.products
 );
 
+export const selectProductById = createSelector(
+  selectProductState,
+  (state: ProductState) => state.selectedProduct
+);
+
 export const selectSearchTerm = createSelector(
   selectProductState,
   (state: ProductState) => state.searchTerm

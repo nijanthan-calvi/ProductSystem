@@ -19,6 +19,11 @@ public class ProductRepository(ProductDataContext context) : IProductRepository
         return await _context.Products.Include(p => p.Category).FirstOrDefaultAsync(p => p.ProductId == id);
     }
 
+    public async Task<Entities.Product?> GetProductByNameAsync(string productName)
+    {
+        return await _context.Products.FirstOrDefaultAsync(p => p.ProductName == productName.ToLower());
+    }
+
     public async Task<ProductCategory?> GetCategoryByNameAsync(string categoryName)
     {
         return await _context.ProductCategory.FirstOrDefaultAsync(p => p.CategoryName == categoryName.ToLower());

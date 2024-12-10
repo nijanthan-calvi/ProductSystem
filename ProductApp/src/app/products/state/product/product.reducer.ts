@@ -19,6 +19,20 @@ export const productReducer = createReducer(
     ...state,
     error,
   })),
+  on(ProductActions.getProductById, (state) => ({
+    ...state,
+    selectedProduct: null,
+  })),
+  on(ProductActions.getProductByIdSuccess, (state: ProductState, { product }) => ({
+    ...state,
+    selectedProduct: product,
+    error: null,
+  })),
+  on(ProductActions.getProductByIdFailure, (state, { error }) => ({
+    ...state,
+    selectedProduct: null,
+    error,
+  })),
   on(ProductActions.addProductSuccess, (state: ProductState, { product }) => ({
     ...state,
     products: [...state.products, product],

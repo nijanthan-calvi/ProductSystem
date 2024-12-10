@@ -1,56 +1,69 @@
 import { createAction, props } from '@ngrx/store';
 import { Product } from '../product/product.model';
 
-export const loadProducts = createAction('[Product API] Load Products');
+const PRODUCT_API = '[Product API]';
+export const loadProducts = createAction(`${PRODUCT_API}  Load Products`);
 
 export const loadProductsSuccess = createAction(
-  '[Product API] Load Products Success', 
+  `${PRODUCT_API} Load Products Success`, 
   props<{ products: Product[] }>());
 
 export const loadProductsFailure = createAction(
-  '[Product API] Load Products Failure', 
+  `${PRODUCT_API} Load Products Failure`, 
   props<{ error: string }>());
 
+export const getProductById = createAction(
+  `${PRODUCT_API} Get ProductById`, 
+  props<{ id: number }>());
+
+export const getProductByIdSuccess = createAction(
+  `${PRODUCT_API} Get ProductById Success`,
+  props<{ product: Product }>());
+
+export const getProductByIdFailure = createAction(
+  `${PRODUCT_API} Get ProductById Failure`,
+  props<{ error: any }>());
+
 export const addProduct = createAction(
-  '[Product API] Add Product', 
+  `${PRODUCT_API} Add Product`, 
   props<{ product: Product }>());
 
 export const addProductSuccess = createAction(
-  '[Product API] Add Product Success', 
+  `${PRODUCT_API} Add Product Success`, 
   props<{ product: Product }>());
 
 export const addProductFailure = createAction(
-  '[Product API] Add Product Failure', 
+  `${PRODUCT_API} Add Product Failure`, 
   props<{ error: string }>());
 
 export const updateProduct = createAction(
-  '[Product API] Update Product', 
+  `${PRODUCT_API} Update Product`, 
   props<{ product: Product }>());
 
 export const updateProductSuccess = createAction(
-  '[Product API] Update Product Success', 
+  `${PRODUCT_API} Update Product Success`, 
   props<{ product: Product }>());
 
 export const updateProductFailure = createAction(
-  '[Product API] Update Product Failure', 
+  `${PRODUCT_API} Update Product Failure`, 
   props<{ error: string }>());  
 
 export const deleteProduct = createAction(
-  '[Product API] Delete Product', 
+  `${PRODUCT_API} Delete Product`, 
   props<{ id: number }>());
 
 export const deleteProductSuccess = createAction(
-  '[Product API] Delete Product Success',
+  `${PRODUCT_API} Delete Product Success`,
   props<{ id: number }>());
 
 export const deleteProductFailure = createAction(
-  '[Product API] Delete Product Failure',
+  `${PRODUCT_API} Delete Product Failure`,
   props<{ error: any }>());
 
 export const searchProducts = createAction(
-  '[Product List] Search Products',
+  `${PRODUCT_API} Search Products`,
   props<{ searchTerm: string }>());
 
 export const sortProducts = createAction(
-  '[Product List] Sort Products',
+  `${PRODUCT_API} Sort Products`,
   props<{ sortBy: 'name' | 'category' | 'description' | 'price'; direction: 'asc' | 'desc' }>());
