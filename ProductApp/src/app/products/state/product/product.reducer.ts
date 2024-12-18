@@ -6,20 +6,20 @@ export const productFeatureKey = 'products';
 
 export const productReducer = createReducer(
   initialState,
-  on(ProductActions.loadProducts, (state) => ({
+  on(ProductActions.loadProducts, (state: ProductState) => ({
     ...state,
   })),
-  on(ProductActions.loadProductsSuccess, (state, { products }) => ({
+  on(ProductActions.loadProductsSuccess, (state: ProductState, { products }) => ({
     ...state,
     products,
     filteredProducts: products,
     error: null,
   })),
-  on(ProductActions.loadProductsFailure, (state, { error }) => ({
+  on(ProductActions.loadProductsFailure, (state: ProductState, { error }) => ({
     ...state,
     error,
   })),
-  on(ProductActions.getProductById, (state) => ({
+  on(ProductActions.getProductById, (state: ProductState) => ({
     ...state,
     selectedProduct: null,
   })),
@@ -28,7 +28,7 @@ export const productReducer = createReducer(
     selectedProduct: product,
     error: null,
   })),
-  on(ProductActions.getProductByIdFailure, (state, { error }) => ({
+  on(ProductActions.getProductByIdFailure, (state: ProductState, { error }) => ({
     ...state,
     selectedProduct: null,
     error,
@@ -38,7 +38,7 @@ export const productReducer = createReducer(
     products: [...state.products, product],
     error: null,
   })),
-  on(ProductActions.addProductFailure, (state, { error }) => ({
+  on(ProductActions.addProductFailure, (state: ProductState, { error }) => ({
     ...state,
     error,
   })),
@@ -47,30 +47,28 @@ export const productReducer = createReducer(
     products: state.products.map((p) => (p.id === product.id ? product : p)),
     error: null,
   })),
-  on(ProductActions.updateProductFailure, (state, { error }) => ({
+  on(ProductActions.updateProductFailure, (state: ProductState, { error }) => ({
     ...state,
     error,
   })),
-  on(ProductActions.deleteProduct, (state, { id }) => ({
+  on(ProductActions.deleteProduct, (state: ProductState, { id }) => ({
     ...state,
     products: state.products.filter((p) => p.id !== id),
   })),
-  on(ProductActions.deleteProductSuccess, (state, { id }) => ({
+  on(ProductActions.deleteProductSuccess, (state: ProductState, { id }) => ({
     ...state,
     products: state.products.filter((p) => (p.id !== id )),
     error: null,
   })),
-  on(ProductActions.deleteProductFailure, (state, { error }) => ({
+  on(ProductActions.deleteProductFailure, (state: ProductState, { error }) => ({
     ...state,
     error,
   })),
-  on(ProductActions.searchProducts, (state, { searchTerm }) => ({
+  on(ProductActions.searchProducts, (state: ProductState, { searchTerm }) => ({
     ...state,
     searchTerm,
-    filteredProducts: state.products.filter((product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()))
   })),
-  on(ProductActions.sortProducts, (state, { sortBy, direction }) => {
+  on(ProductActions.sortProducts, (state: ProductState, { sortBy, direction }) => {
     const sortedProducts = [...state.filteredProducts].sort((a, b) => {
       const compareValue =
         sortBy === 'price'

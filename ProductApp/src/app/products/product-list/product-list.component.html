@@ -11,10 +11,8 @@
                 <a class="nav-link active" aria-current="page" href="/products/form/add">Add Product</a>
               </li>
             </ul>
-            <form class="d-flex" role="search">
-              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" #searchInput>
+              <input class="form-control me-2" style="width: 25%;" type="search" placeholder="Search" aria-label="Search" #searchInput>
               <button class="btn btn-outline-success" type="submit" (click)="onSearch(searchInput.value)">Search</button>
-            </form>
           </div>
         </div>
       </nav>
@@ -30,6 +28,10 @@
         </tr>
       </thead>
       <tbody>
+         <!-- Check if there are any products -->
+         <tr *ngIf="filteredProducts().length === 0">
+          <td colspan="5" class="text-center">No data available</td>
+         </tr>
         <tr *ngFor="let product of filteredProducts()">
           <td>{{ product.name }}</td>
           <td>{{ product.description }}</td>

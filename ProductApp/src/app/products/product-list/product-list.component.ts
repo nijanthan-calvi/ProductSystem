@@ -1,11 +1,12 @@
-import { Component, computed, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, OnInit, signal } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Product } from '../state/product/product.model';
 import * as ProductActions from '../state/product/product.actions';
-import { selectProducts } from '../state/product/product.selectors';
+import { selectProducts, selectSearchTerm } from '../state/product/product.selectors';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
+import { ProductState } from '../state/product/product.state';
 
 @Component({
   selector: 'app-product-list',
@@ -13,6 +14,7 @@ import { ReactiveFormsModule } from '@angular/forms';
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductListComponent implements OnInit {
   products = signal<Product[]>([]);
@@ -24,14 +26,18 @@ export class ProductListComponent implements OnInit {
     this.products().filter((product) => 
       product.name.toLowerCase().includes(this.searchTerm().toLowerCase())));
 
-  constructor(private store: Store) {}
+  constructor(private store: Store<ProductState>) {}
 
   ngOnInit(): void {
     this.store.dispatch(ProductActions.loadProducts());
 
     this.store.select(selectProducts).subscribe((products) => {
       this.products.set(products);
-    })
+    });
+
+    this.store.select(selectSearchTerm).subscribe((searchTerm) => {
+      this.searchTerm.set(searchTerm);
+    });
   }
 
   setSelectedProductId(id: number): void {
